@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -23,7 +24,7 @@ class GenreViewSet(CreateListDeleteViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     """Вьюсет для модели Title."""
-    queryset = Title.objects.all()  # надо что-то с рейтингом придумать,ищу инфу
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     pagination_class = PageNumberPagination
     ordering = ('name',)
 

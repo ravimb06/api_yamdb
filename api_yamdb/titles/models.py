@@ -86,5 +86,7 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
-        f'Произведение {self.name} - Категория {self.category}'
-        f'Жанр {self.genre} - Год релиза {self.year}'
+        return (
+            f'Произведение {self.name} - Категория {self.category}'
+            f'Жанр {self.genre} - Год релиза {self.year}'
+        )
