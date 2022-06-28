@@ -2,6 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from titles.models import Title
+from api.validators import validate_year
 from users.models import #  Наш переопределенный юзер
 
 
@@ -74,7 +75,6 @@ class Comment(models.Model):
     class Meta:
         ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
     
     def __str__(self):
         return (
@@ -82,3 +82,57 @@ class Comment(models.Model):
             f'К обзору {self.review[:15]}'
             f'Автор {self.author}'
         )
+
+
+class Category(models.Model):
+    name = models.CharField('название', max_length=256)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ('name', )
+        verbose_name = 'категория'
+
+    def __str__(self):
+        return self.name
+
+
+class Genre(models.Model):
+    name = models.CharField('название', max_length=256)
+    slug = models.SlugField(unique=True)
+
+    class Meta:
+        ordering = ('name', )
+        verbose_name = 'жанр'
+
+    def __str__(self):
+        return self.name
+
+
+class Title(models.Model):
+    name = models.CharField('название', max_length=256)
+    year = models.SmallIntegerField('год', validators=(validate_year,))
+    description = models.TextField(
+        'описание',
+        null=True,
+        blank=True
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles',
+        verbose_name='жанр'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        verbose_name='категория',
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ('name', )
+        verbose_name = 'произведение'
+
+    def __str__(self):
+        return self.name
