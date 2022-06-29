@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from titles.models import Title
-from users.models import #  Наш переопределенный юзер
+from users.models import User
 
 
 class Review(models.Model):
@@ -15,7 +15,7 @@ class Review(models.Model):
     )
     text = models.TextField(verbose_name='Текст обзора')
     author = models.ForeignKey(
-        #  Наш переопределенный юзер,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор обзора',
     )
@@ -55,7 +55,7 @@ class Review(models.Model):
 class Comment(models.Model):
     """Модель комментариев к обзорам."""
     author = models.ForeignKey(
-        #  Наш переопределенный юзер,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор комментария',
     )
