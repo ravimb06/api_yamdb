@@ -1,9 +1,8 @@
 import uuid
 
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
-from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
 
 from api.filters import TitleFilter
 from api.permissions import (IsAdminModeratorAuthorOrReadOnly,
@@ -14,11 +13,13 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              TitleReadOnlySerializer, TokenSerializer,
                              UserSerializer)
 
+from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status, viewsets
-from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action, api_view
+from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (IsAuthenticated)
 from rest_framework.response import Response
