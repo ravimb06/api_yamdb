@@ -1,9 +1,5 @@
 import uuid
 
-from django.core.mail import send_mail
-from django.db import IntegrityError
-from django.db.models import Avg
-
 from api.filters import TitleFilter
 from api.permissions import (IsAdminModeratorAuthorOrReadOnly,
                              IsAdminOrReadOnly, OwnerOrAdmins,)
@@ -12,6 +8,10 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              SignUpSerializer, TitleAdminSerializer,
                              TitleReadOnlySerializer, TokenSerializer,
                              UserSerializer)
+
+from django.core.mail import send_mail
+from django.db import IntegrityError
+from django.db.models import Avg
 
 from django.shortcuts import get_object_or_404
 
