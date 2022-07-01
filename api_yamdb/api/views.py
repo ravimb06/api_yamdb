@@ -1,22 +1,22 @@
 import uuid
 
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import filters, status, viewsets
+
 from rest_framework.filters import SearchFilter
+from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.decorators import api_view, action
 from rest_framework.permissions import (IsAuthenticated)
 from rest_framework.response import Response
+
 from rest_framework_simplejwt.tokens import AccessToken
 
-from users.models import User
-from titles.models import Title, Category, Genre
-from titles.mixins import CreateListDeleteViewSet
-from reviews.models import Review
 from api.filters import TitleFilter
 from api.permissions import (IsAdminModeratorAuthorOrReadOnly, OwnerOrAdmins,
                              IsAdminOrReadOnly,)
@@ -25,6 +25,13 @@ from api.serializers import (SignUpSerializer, TokenSerializer,
                              CommentSerializer, GenreSerializer,
                              CategorySerializer, TitleReadOnlySerializer,
                              TitleAdminSerializer)
+
+from reviews.models import Review
+
+from titles.mixins import CreateListDeleteViewSet
+from titles.models import Category, Genre, Title
+
+from users.models import User
 
 
 @api_view(['POST'])

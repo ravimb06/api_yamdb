@@ -2,13 +2,14 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from titles.models import Title
+
 from users.models import User
 
 
 class Review(models.Model):
     """Модель Обзоров на произведения."""
     title = models.ForeignKey(
-        Title, 
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Название произведения',
@@ -75,7 +76,7 @@ class Comment(models.Model):
         ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-    
+
     def __str__(self):
         return (
             f'Комментарий {self.text[:15]}'
