@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.relations import StringRelatedField
 from reviews.models import Comment, Review
 from titles.models import Category, Genre, Title
 
@@ -42,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MeSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(read_only=True)
+    role = StringRelatedField(read_only=True)
 
     class Meta:
         model = User
@@ -120,7 +121,7 @@ class TitleReadOnlySerializer(serializers.ModelSerializer):
 class TitleAdminSerializer(serializers.ModelSerializer):
     """Сериализатор для администратора модели Title."""
     category = serializers.SlugRelatedField(
-        quaryset=Category.objects.all(),
+        queryset=Category.objects.all(),
         slug_field='slug',
     )
     genre = serializers.SlugRelatedField(

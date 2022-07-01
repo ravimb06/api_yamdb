@@ -3,21 +3,28 @@ import uuid
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
+from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
+from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, action
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import User
-from titles.models import Title
+from titles.models import Title, Category, Genre
+from titles.mixins import CreateListDeleteViewSet
 from reviews.models import Review
-from api.permissions import (IsAdminModeratorAuthorOrReadOnly, OwnerOrAdmins,)
+from api.filters import TitleFilter
+from api.permissions import (IsAdminModeratorAuthorOrReadOnly, OwnerOrAdmins,
+                             IsAdminOrReadOnly,)
 from api.serializers import (SignUpSerializer, TokenSerializer,
                              UserSerializer, MeSerializer, ReviewSerializer,
-                             CommentSerializer)
+                             CommentSerializer, GenreSerializer,
+                             CategorySerializer, TitleReadOnlySerializer,
+                             TitleAdminSerializer)
 
 
 @api_view(['POST'])
@@ -113,3 +120,39 @@ class CommentViewSet(viewsets.ModelViewSet):
                                    id=self.kwargs.get('review_id'),
                                    title=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, review=review)
+
+
+class CategoryViewSet(CreateListDeleteViewSet):
+    """Вьюсет для модели Category."""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('=name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class GenreViewSet(CreateListDeleteViewSet):
+    """Вьюсет для модели Genre."""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('=name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Title."""
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('name')
+    filterset_class = TitleFilter
+    pagination_class = PageNumberPagination
+    ordering = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TitleReadOnlySerializer
+        return TitleAdminSerializer
