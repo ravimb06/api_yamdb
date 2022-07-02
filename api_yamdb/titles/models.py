@@ -1,4 +1,4 @@
-from datetime import date
+import datetime
 
 from django.db import models
 from django.core.validators import MaxValueValidator
@@ -64,7 +64,7 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(
         validators=(
             MaxValueValidator(
-                date.today().year,
+                int(datetime.datetime.now.year),
                 message='Нельзя указывать год, больше текущего',
             ),
 

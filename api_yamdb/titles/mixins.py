@@ -9,7 +9,7 @@ class CreateListDeleteViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
-    permission_classes = [AdminOrReadOnly]
-    filter_backends = [filters.SearchFilter]
+    permission_classes = (AdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'

@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from titles.models import Title
-from users.models import #  Наш переопределенный юзер
+# from users.models import #  Наш переопределенный юзер
 
 
 class Review(models.Model):
@@ -28,11 +28,11 @@ class Review(models.Model):
         validators=(
             MinValueValidator(
                 1,
-                message='Число должно быть от 1 до 10'
+                message='Оцените от 1 до 10'
             ),
             MaxValueValidator(
                 10,
-                message='Число должно быть от 1 до 10'
+                message='Оцените от 1 до 10'
             )
         )
     )
@@ -79,6 +79,6 @@ class Comment(models.Model):
     def __str__(self):
         return (
             f'Комментарий {self.text[:15]}'
-            f'К обзору {self.review[:15]}'
-            f'Автор {self.author}'
+            f'К обзору {self.review.text[:15]}'
+            f'Автор {self.author.username}'
         )
