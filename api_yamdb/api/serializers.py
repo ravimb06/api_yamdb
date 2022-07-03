@@ -6,7 +6,7 @@ from rest_framework.relations import StringRelatedField
 from reviews.models import Comment, Review
 
 from titles.models import Category, Genre, Title
-# требует именно такие импорты иначе не пропускает
+
 from users.models import User
 
 
