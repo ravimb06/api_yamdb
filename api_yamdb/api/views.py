@@ -2,34 +2,26 @@ import uuid
 
 from api.filters import TitleFilter
 from api.permissions import (IsAdminModeratorAuthorOrReadOnly,
-                             IsAdminOrReadOnly, OwnerOrAdmins,)
+                             IsAdminOrReadOnly, OwnerOrAdmins)
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, MeSerializer, ReviewSerializer,
                              SignUpSerializer, TitleAdminSerializer,
                              TitleReadOnlySerializer, TokenSerializer,
                              UserSerializer)
-
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (IsAuthenticated)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from rest_framework_simplejwt.tokens import AccessToken
-
-from reviews.models import Review
-
 from titles.mixins import CreateListDeleteViewSet
 from titles.models import Category, Genre, Title
-
 from users.models import User
 
 
@@ -54,7 +46,7 @@ def signup_post(request):
     user.save()
     send_mail(
         'Код подверждения', confirmation_code,
-        ['admin@email.com'], (email, ), fail_silently=False
+        None, (user.email, )
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -118,13 +110,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
-        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
-        return review.comments.all()
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        try:
+            review = title.reviews.get(id=self.kwargs.get('review_id'))
+        except TypeError:
+            TypeError('Нет такого отзыва')
+        return review.comments.all().order_by('id')
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review,
-                                   id=self.kwargs.get('review_id'),
-                                   title=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        try:
+            review = title.reviews.get(id=self.kwargs.get('review_id'))
+        except TypeError:
+            TypeError('Нет такого отзыва')
         serializer.save(author=self.request.user, review=review)
 
 
@@ -159,6 +157,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
+        if self.action in ('list', 'retrieve'):
             return TitleReadOnlySerializer
         return TitleAdminSerializer

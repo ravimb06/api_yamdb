@@ -2,11 +2,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.relations import StringRelatedField
-
 from reviews.models import Comment, Review
-
 from titles.models import Category, Genre, Title
-
 from users.models import User
 
 
@@ -14,13 +11,13 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254, required=True)
     username = serializers.CharField(max_length=150, required=True)
 
+    class Meta:
+        fields = ('username', 'email')
+
     def validate(self, data):
         if data['username'] == 'me':
             raise serializers.ValidationError('Нельзя использовать логин me')
         return data
-
-    class Meta:
-        fields = ('username', 'email')
 
 
 class TokenSerializer(serializers.Serializer):
@@ -74,7 +71,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             if Review.objects.filter(title=title, author=author).exists():
                 raise ValidationError('Вы можете добавить лишь'
                                       'один отзыв на произведение')
-        if 10 < data['score'] < 1:
+        if 10 <= data['score'] <= 1:
             raise ValidationError('Оценка может быть от 1 до 10')
         return data
 
@@ -131,10 +128,9 @@ class TitleAdminSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True,
     )
-    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'description', 'genre', 'year', 'category', 'rating'
+            'id', 'name', 'description', 'genre', 'year', 'category'
         )
