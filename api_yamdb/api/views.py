@@ -117,18 +117,12 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        try:
-            review = title.reviews.get(id=self.kwargs.get('review_id'))
-        except TypeError:
-            TypeError('Нет такого отзыва')
-        return review.comments.all().order_by('id')
+        review = title.reviews.get(id=self.kwargs.get('review_id'))
+        return review.comments.all()
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        try:
-            review = title.reviews.get(id=self.kwargs.get('review_id'))
-        except TypeError:
-            TypeError('Нет такого отзыва')
+        review = title.reviews.get(id=self.kwargs.get('review_id'))
         serializer.save(author=self.request.user, review=review)
 
 
