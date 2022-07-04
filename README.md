@@ -70,6 +70,6 @@ import os
 - Django REST framework
 
 # Авторы:
-Али Богатырев. <https://github.com/ravimb06>
-Никита Киселев. <https://github.com/Kiselev1988>
-Максим Кожухов. <https://github.com/Neogenka>
+- Али Богатырев. <https://github.com/ravimb06>
+- Никита Киселев. <https://github.com/Kiselev1988>
+- Максим Кожухов. <https://github.com/Neogenka>
