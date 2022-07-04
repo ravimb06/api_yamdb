@@ -1,3 +1,7 @@
+# REST API для сервиса YaMDb
+
+## REST API проект для сервиса YaMDb — собирает отзывы пользователей на произведения.
+
 Клонировать репозиторий
 git clone https://github.com/ravimb06/api_yamdb.git
 
@@ -59,3 +63,13 @@ python manage.py shell
 импорт необходимых модулей
 
 import os
+
+### Использованные технологии:
+- Python 3
+- Django
+- Django REST framework
+
+# Авторы:
+Али Богатырев. <https://github.com/ravimb06>
+Никита Киселев. <https://github.com/Kiselev1988>
+Максим Кожухов. <https://github.com/Neogenka>
