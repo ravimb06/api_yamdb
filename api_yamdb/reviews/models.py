@@ -2,20 +2,21 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from titles.models import Title
-from users.models import #  Наш переопределенный юзер
+
+from users.models import User
 
 
 class Review(models.Model):
     """Модель Обзоров на произведения."""
     title = models.ForeignKey(
-        Title, 
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='Название произведения',
     )
     text = models.TextField(verbose_name='Текст обзора')
     author = models.ForeignKey(
-        #  Наш переопределенный юзер,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор обзора',
     )
@@ -23,7 +24,7 @@ class Review(models.Model):
         auto_now_add=True,
         verbose_name='Дата публикации',
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         validators=(
             MinValueValidator(
@@ -49,13 +50,13 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return f'Обзор:{self.text[:15]} - автор {self.author}'
+        return f'Обзор:{self.text[:15]} - автор {self.author.username}'
 
 
 class Comment(models.Model):
     """Модель комментариев к обзорам."""
     author = models.ForeignKey(
-        #  Наш переопределенный юзер,
+        User,
         on_delete=models.CASCADE,
         verbose_name='Автор комментария',
     )
@@ -75,10 +76,10 @@ class Comment(models.Model):
         ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-    
+
     def __str__(self):
         return (
             f'Комментарий {self.text[:15]}'
-            f'К обзору {self.review[:15]}'
-            f'Автор {self.author}'
+            f'К обзору {self.review.text[:15]}'
+            f'Автор {self.author.username}'
         )

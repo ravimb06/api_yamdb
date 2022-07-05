@@ -1,7 +1,6 @@
-from datetime import date
-
-from django.db import models
 from django.core.validators import MaxValueValidator
+from django.db import models
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -64,7 +63,7 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(
         validators=(
             MaxValueValidator(
-                date.today().year,
+                int(timezone.now().year),
                 message='Нельзя указывать год, больше текущего',
             ),
 

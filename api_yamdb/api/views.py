@@ -1,21 +1,34 @@
 import uuid
 
+from api.filters import TitleFilter
+from api.permissions import (IsAdminModeratorAuthorOrReadOnly,
+                             IsAdminOrReadOnly, OwnerOrAdmins)
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, MeSerializer, ReviewSerializer,
+                             SignUpSerializer, TitleAdminSerializer,
+                             TitleReadOnlySerializer, TokenSerializer,
+                             UserSerializer)
+
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
-from rest_framework import filters, status, viewsets
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view
+from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.decorators import api_view, action
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from rest_framework_simplejwt.tokens import AccessToken
 
+from titles.mixins import CreateListDeleteViewSet
+from titles.models import Category, Genre, Title
+
 from users.models import User
-from api.permissions import (AuthorAndStaffOrReadOnly,
-                             IsAdminOrReadOnly, OwnerOrAdmins)
-from api.serializers import (SignUpSerializer, TokenSerializer,
-                             UserSerializer, MeSerializer)
 
 
 @api_view(['POST'])
@@ -39,7 +52,7 @@ def signup_post(request):
     user.save()
     send_mail(
         'Код подверждения', confirmation_code,
-        ['admin@email.com'], (email, ), fail_silently=False
+        None, (user.email, )
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = PageNumberPagination
     permission_classes = (OwnerOrAdmins, )
-    filter_backends = (filters.SearchFilter, )
+    filter_backends = (SearchFilter,)
     filterset_fields = ('username')
     search_fields = ('username', )
     lookup_field = 'username'
@@ -83,3 +96,67 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        review = title.reviews.get(id=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        review = title.reviews.get(id=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)
+
+
+class CategoryViewSet(CreateListDeleteViewSet):
+    """Вьюсет для модели Category."""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('=name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class GenreViewSet(CreateListDeleteViewSet):
+    """Вьюсет для модели Genre."""
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (SearchFilter,)
+    search_fields = ('=name',)
+    lookup_field = 'slug'
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Title."""
+    queryset = Title.objects.all().annotate(
+        rating=Avg('reviews__score')).order_by('name')
+    filterset_class = TitleFilter
+    pagination_class = PageNumberPagination
+    ordering = ('name',)
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadOnlySerializer
+        return TitleAdminSerializer
